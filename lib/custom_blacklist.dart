@@ -16,4 +16,13 @@ class CustomBlacklist {
     'files',
     'logs',
   ];
+
+  static const whitelistedComparators = [
+    'BigintComparisonExp',
+    'IntComparisonExp',
+    'TimestampComparisonExp',
+    'StringComparisonExp',
+    'JsonComparisonExp',
+    'BooleanComparisonExp',
+  ];
 }

@@ -1,3 +1,4 @@
+import 'package:artemis/custom_blacklist.dart';
 import 'package:artemis/generator/data/data.dart';
 import 'package:artemis/generator/data/enum_value_definition.dart';
 import 'package:artemis/generator/errors.dart';
@@ -71,7 +72,8 @@ Method _propsMethod(Iterable<String> body) {
 Spec classDefinitionToSpec(
     ClassDefinition definition,
     Iterable<FragmentClassDefinition> fragments,
-    Iterable<ClassDefinition> classes) {
+    Iterable<ClassDefinition> classes,
+    String basename) {
   final fromJson = definition.factoryPossibilities.isNotEmpty
       ? Constructor(
           (b) => b
@@ -132,11 +134,21 @@ Spec classDefinitionToSpec(
   final extendedClass =
       classes.firstWhereOrNull((e) => e.name == definition.extension);
 
+  final realBase = basename.split('.').first.pascalCase;
+
+  final namePrintable = definition.name.namePrintable;
+  final String finalizedName;
+  if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
+    finalizedName = realBase + namePrintable;
+  } else {
+    finalizedName = definition.name.namePrintable;
+  }
+
   return Class(
     (b) => b
       ..annotations
           .add(CodeExpression(Code('JsonSerializable(explicitToJson: true)')))
-      ..name = definition.name.namePrintable
+      ..name = finalizedName
       ..mixins.add(refer('EquatableMixin'))
       ..mixins.addAll(definition.mixins.map((i) => refer(i.namePrintable)))
       ..methods.add(_propsMethod(props))
@@ -172,12 +184,19 @@ Spec classDefinitionToSpec(
         }
 
         final field = Field((f) {
+          final namePrintable = p.type.namePrintable.replaceAll('?', '');
+          final String finalizedName;
+          if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
+            finalizedName = '$realBase$namePrintable?';
+          } else {
+            finalizedName = p.type.namePrintable;
+          }
+
           f
             ..name = p.name.namePrintable
             // TODO: remove this workaround when code_builder includes late field modifier:
             // https://github.com/dart-lang/code_builder/pull/310
-            ..type = refer(
-                '${p.type.isNonNull ? 'late ' : ''} ${p.type.namePrintable}')
+            ..type = refer('${p.type.isNonNull ? 'late ' : ''} $finalizedName')
             ..annotations.addAll(
               p.annotations.map((e) => CodeExpression(Code(e))),
             );
@@ -399,8 +418,8 @@ Spec generateLibrarySpec(LibraryDefinition definition) {
   final enums = uniqueDefinitions.whereType<EnumDefinition>();
 
   bodyDirectives.addAll(fragments.map(fragmentClassDefinitionToSpec));
-  bodyDirectives.addAll(
-      classes.map((cDef) => classDefinitionToSpec(cDef, fragments, classes)));
+  bodyDirectives.addAll(classes.map((cDef) =>
+      classDefinitionToSpec(cDef, fragments, classes, definition.basename)));
   bodyDirectives.addAll(enums.map(enumDefinitionToSpec));
 
   for (final queryDef in definition.queries) {
