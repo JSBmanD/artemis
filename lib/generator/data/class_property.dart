@@ -1,3 +1,4 @@
+import 'package:artemis/custom_blacklist.dart';
 import 'package:artemis/generator/data/definition.dart';
 import 'package:artemis/generator/data_printer.dart';
 import 'package:artemis/generator/helpers.dart';
@@ -61,6 +62,10 @@ class ClassPropertyName extends Name with DataPrinter {
   String normalize(String name) {
     final normalized = super.normalize(name);
     final suffix = RegExp(r'.*(_+)$').firstMatch(normalized)?.group(1) ?? '';
+
+    if (CustomBlacklist.blacklistedResults.contains(name)) {
+      return ReCase('returning').camelCase + suffix;
+    }
     return ReCase(super.normalize(name)).camelCase + suffix;
   }
 
