@@ -74,6 +74,16 @@ Spec classDefinitionToSpec(
     Iterable<FragmentClassDefinition> fragments,
     Iterable<ClassDefinition> classes,
     String basename) {
+  final realBase = basename.split('.').first.pascalCase;
+  final namePrintable = definition.name.namePrintable;
+
+  final String finalizedFromJsonName;
+  if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
+    finalizedFromJsonName = realBase + namePrintable;
+  } else {
+    finalizedFromJsonName = definition.name.namePrintable;
+  }
+
   final fromJson = definition.factoryPossibilities.isNotEmpty
       ? Constructor(
           (b) => b
@@ -96,9 +106,15 @@ Spec classDefinitionToSpec(
                 ..type = refer('Map<String, dynamic>')
                 ..name = 'json',
             ))
-            ..body = Code('_\$${definition.name.namePrintable}FromJson(json)'),
+            ..body = Code('_\$${finalizedFromJsonName}FromJson(json)'),
         );
 
+  final String finalizedToJsonName;
+  if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
+    finalizedToJsonName = realBase + namePrintable;
+  } else {
+    finalizedToJsonName = definition.name.namePrintable;
+  }
   final toJson = definition.factoryPossibilities.isNotEmpty
       ? Method(
           (m) => m
@@ -113,7 +129,7 @@ Spec classDefinitionToSpec(
             ..lambda = true
             ..annotations.add(CodeExpression(Code('override')))
             ..returns = refer('Map<String, dynamic>')
-            ..body = Code('_\$${definition.name.namePrintable}ToJson(this)'),
+            ..body = Code('_\$${finalizedToJsonName}ToJson(this)'),
         );
 
   final props = definition.mixins
@@ -134,21 +150,18 @@ Spec classDefinitionToSpec(
   final extendedClass =
       classes.firstWhereOrNull((e) => e.name == definition.extension);
 
-  final realBase = basename.split('.').first.pascalCase;
-
-  final namePrintable = definition.name.namePrintable;
-  final String finalizedName;
+  final String finalizedComparatorName;
   if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
-    finalizedName = realBase + namePrintable;
+    finalizedComparatorName = realBase + namePrintable;
   } else {
-    finalizedName = definition.name.namePrintable;
+    finalizedComparatorName = definition.name.namePrintable;
   }
 
   return Class(
     (b) => b
       ..annotations
           .add(CodeExpression(Code('JsonSerializable(explicitToJson: true)')))
-      ..name = finalizedName
+      ..name = finalizedComparatorName
       ..mixins.add(refer('EquatableMixin'))
       ..mixins.addAll(definition.mixins.map((i) => refer(i.namePrintable)))
       ..methods.add(_propsMethod(props))
@@ -185,18 +198,19 @@ Spec classDefinitionToSpec(
 
         final field = Field((f) {
           final namePrintable = p.type.namePrintable.replaceAll('?', '');
-          final String finalizedName;
+          final String finalizedVarTypeName;
           if (CustomBlacklist.whitelistedComparators.contains(namePrintable)) {
-            finalizedName = '$realBase$namePrintable?';
+            finalizedVarTypeName = '$realBase$namePrintable?';
           } else {
-            finalizedName = p.type.namePrintable;
+            finalizedVarTypeName = p.type.namePrintable;
           }
 
           f
             ..name = p.name.namePrintable
             // TODO: remove this workaround when code_builder includes late field modifier:
             // https://github.com/dart-lang/code_builder/pull/310
-            ..type = refer('${p.type.isNonNull ? 'late ' : ''} $finalizedName')
+            ..type = refer(
+                '${p.type.isNonNull ? 'late ' : ''} $finalizedVarTypeName')
             ..annotations.addAll(
               p.annotations.map((e) => CodeExpression(Code(e))),
             );
