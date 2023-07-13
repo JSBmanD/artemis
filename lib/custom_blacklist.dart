@@ -8,5 +8,12 @@ class CustomBlacklist {
     'update_bot_groups',
     'update_bot_planned_messages',
     'update_bot_users',
+    'bot_groups',
+    'bot_planned_messages',
+    'bot_users',
+    'console_filters',
+    'console_instances',
+    'files',
+    'logs',
   ];
 }
