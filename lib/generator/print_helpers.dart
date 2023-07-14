@@ -157,10 +157,17 @@ Spec classDefinitionToSpec(
     finalizedComparatorName = definition.name.namePrintable;
   }
 
+  final String classAnnotation;
+  if (finalizedComparatorName.endsWith('Exp')) {
+    classAnnotation =
+        'JsonSerializable(explicitToJson: true, includeIfNull: false)';
+  } else {
+    classAnnotation = 'JsonSerializable(explicitToJson: true)';
+  }
+
   return Class(
     (b) => b
-      ..annotations
-          .add(CodeExpression(Code('JsonSerializable(explicitToJson: true)')))
+      ..annotations.add(CodeExpression(Code(classAnnotation)))
       ..name = finalizedComparatorName
       ..mixins.add(refer('EquatableMixin'))
       ..mixins.addAll(definition.mixins.map((i) => refer(i.namePrintable)))
