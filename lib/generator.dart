@@ -1,3 +1,4 @@
+import 'package:artemis/custom_blacklist.dart';
 import 'package:artemis/generator/data/data.dart';
 import 'package:artemis/generator/data/enum_value_definition.dart';
 import 'package:artemis/generator/data/nullable.dart';
@@ -424,7 +425,15 @@ Make sure your query is correct and your schema is updated.''');
     final jsonKey = jsonKeyAnnotation.entries
         .map<String>((e) => '${e.key}: ${e.value}')
         .join(', ');
-    annotations.add('JsonKey($jsonKey)');
+    var nonNullable = false;
+    for (var element in CustomBlacklist.blacklistedOperators) {
+      if (jsonKey.contains(element)) {
+        nonNullable = true;
+      }
+    }
+
+    annotations
+        .add('JsonKey($jsonKey${nonNullable ? ', includeIfNull: false' : ''})');
   }
   annotations.addAll(proceedDeprecated(fieldDirectives));
 

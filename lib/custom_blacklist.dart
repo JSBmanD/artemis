@@ -25,4 +25,16 @@ class CustomBlacklist {
     'JsonComparisonExp',
     'BooleanComparisonExp',
   ];
+
+  static const blacklistedOperators = [
+    '_eq',
+    '_gt',
+    '_gte',
+    '_in',
+    '_is_null',
+    '_lt',
+    '_lte',
+    '_neq',
+    '_nin',
+  ];
 }
