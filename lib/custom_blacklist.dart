@@ -50,4 +50,8 @@ class CustomBlacklist {
     '\'_or\'',
     '\'_iregex\'',
   ];
+
+  static const blacklistedFields = [
+    'changes',
+  ];
 }

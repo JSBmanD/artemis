@@ -294,9 +294,27 @@ Spec generateArgumentClassSpec(QueryDefinition definition) {
           ..annotations.add(CodeExpression(Code('override')))
           ..body = Code('_\$${definition.className}ArgumentsToJson(this)'),
       ))
+      /*..methods.add(Method(
+        (m) => m
+          ..name = '_safeToJson'
+          ..static = true
+          ..lambda = true
+          ..returns = refer('Map<String, dynamic>')
+          ..requiredParameters.add(Parameter(
+            (p) => p
+              ..type = refer('dynamic')
+              ..name = 'input',
+          ))
+          ..body = Code('input == null ? {} : input.toJson()'),
+      ))*/
       ..fields.addAll(definition.inputs.map(
         (p) => Field(
           (f) {
+            /*  if (CustomBlacklist.blacklistedFields.contains(p.name.name)) {
+              f.annotations
+                  .add(CodeExpression(Code('JsonKey(toJson: _safeToJson)')));
+            }
+*/
             f
               ..name = p.name.namePrintable
               // TODO: remove this workaround when code_builder includes late field modifier:
