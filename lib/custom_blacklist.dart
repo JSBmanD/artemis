@@ -15,6 +15,7 @@ class CustomBlacklist {
     'console_instances',
     'files',
     'logs',
+    'messages',
   ];
 
   static const whitelistedComparators = [
