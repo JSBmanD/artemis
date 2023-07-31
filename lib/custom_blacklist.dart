@@ -16,6 +16,7 @@ class CustomBlacklist {
     'files',
     'logs',
     'messages',
+    'groups_assignments',
   ];
 
   static const whitelistedComparators = [
