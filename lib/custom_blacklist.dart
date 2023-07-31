@@ -1,23 +1,27 @@
 class CustomBlacklist {
-  static const blacklistedResults = [
-    'insert_files',
-    'insert_bot_planned_messages',
-    'insert_bot_users',
-    'insert_logs',
-    'update_files',
-    'update_bot_groups',
-    'update_bot_planned_messages',
-    'update_bot_users',
+  static const _blacklistedResults = [
     'bot_groups',
+    'bot_instances',
     'bot_planned_messages',
     'bot_users',
     'console_filters',
     'console_instances',
     'files',
+    'groups_assignments',
     'logs',
     'messages',
-    'groups_assignments',
   ];
+
+  List<String> blacklistedReturnings() {
+    final list = <String>[];
+    for (var element in _blacklistedResults) {
+      list.add(element);
+      list.add('insert_$element');
+      list.add('update_$element');
+    }
+
+    return list;
+  }
 
   static const whitelistedComparators = [
     'BigintComparisonExp',

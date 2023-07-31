@@ -62,8 +62,9 @@ class ClassPropertyName extends Name with DataPrinter {
   String normalize(String name) {
     final normalized = super.normalize(name);
     final suffix = RegExp(r'.*(_+)$').firstMatch(normalized)?.group(1) ?? '';
+    final blacklistedReturnings = CustomBlacklist().blacklistedReturnings();
 
-    if (CustomBlacklist.blacklistedResults.contains(name)) {
+    if (blacklistedReturnings.contains(name)) {
       return ReCase('returning').camelCase + suffix;
     }
     return ReCase(super.normalize(name)).camelCase + suffix;
