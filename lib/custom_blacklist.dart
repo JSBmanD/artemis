@@ -10,6 +10,7 @@ class CustomBlacklist {
     'groups_assignments',
     'logs',
     'messages',
+    'source_groups',
   ];
 
   List<String> blacklistedReturnings() {
